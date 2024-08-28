@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:http/http.dart' as http;
+import 'package:typewritertext/typewritertext.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -50,6 +51,7 @@ class _ChatScreenState extends State<ChatScreen> {
       ]
     };
     var result;
+
     var url = Uri.parse(
         'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=$apiKey');
     await http
@@ -178,7 +180,8 @@ class _ChatScreenState extends State<ChatScreen> {
                         ).createShader(Rect.fromLTWH(0.0, 0.0, 200.0, 70.0)),
                     ),
                   )
-                : Text(message.text);
+                : TypeWriter.text(message.text,
+                    duration: Duration(milliseconds: 10));
           },
         ),
       ),
