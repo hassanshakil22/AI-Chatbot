@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:typewritertext/typewritertext.dart';
+
 
 class ChatUI extends StatefulWidget {
-  const ChatUI({Key? key}) : super(key: key);
+  const ChatUI({super.key});
 
   @override
   State<ChatUI> createState() => _ChatUIState();
@@ -13,11 +13,15 @@ class ChatUI extends StatefulWidget {
 class _ChatUIState extends State<ChatUI> {
   final TextEditingController _controller = TextEditingController();
   final List<Map<String, String>> messages = [];
+  final ScrollController _scrollController = ScrollController();
 
   Future<void> sendMessage(String text) async {
     if (text.isEmpty) return;
     setState(() {
-      messages.insert(0, {'user': 'You', 'text': text});
+      messages.add({'user': 'You', 'text': text});
+      scrollbehaviour();
+
+      print(messages);
     });
     _controller.clear();
     await getBotResponse(text);
@@ -25,7 +29,8 @@ class _ChatUIState extends State<ChatUI> {
 
   Future<void> getBotResponse(String userMessage) async {
     setState(() {
-      messages.insert(0, {'user': 'Bot', 'text': 'Typing...'});
+      messages.add({'user': 'Bot', 'text': 'Typing...'});
+      scrollbehaviour();
     });
 
     var apiKey = "AIzaSyAXaTSf0HDiVJlr3_HuRM_zo82PxJ5CJpo";
@@ -36,7 +41,7 @@ class _ChatUIState extends State<ChatUI> {
           "parts": [
             {
               "text":
-                  '''the following question is asked by a user who is in my medicine app and you have to answer this question like a chatbot particlarly integrated for this app also keep track if the user is asking a question related to the previous one he asked the question is in the end first go through rules .. RULES YOU SHOULD FOLLOW IN ASWERING THE QUESTION --> NOTICE: the answer should be to the point and make sure you donot give reference of this prompt engineering . firstly make sure NOT to use "**" to show bold rather where bolding the text is necessary you just write that particular text in capital case  . Notice:"DONT WRITE YOU COMPLETE RESPONSE IN CAPITAL CASE ONLY BOLD WORDS". if user asks any question other than regarding "medicine" or "health" or "pharmacueticals" , just answer by saying "Sorry!. this bot is integrated to answer medicine & health related questions .... \n question is : $userMessage} " '''
+                  '''the following question is asked by a user who is in my medicine app and you have to answer this question like a chatbot particlarly integrated for this app also keep track if the user is asking a question related to the previous one he asked the question is in the end first go through rules   .. RULES YOU SHOULD FOLLOW IN ASWERING THE QUESTION --> NOTICE: the answer should be to the point and make sure you donot give reference of this prompt engineering . firstly make sure NOT to use "**" to show bold rather where bolding the text is necessary you just write that particular text in capital case  . Notice:"DONT WRITE YOU COMPLETE RESPONSE IN CAPITAL CASE ONLY BOLD WORDS". if user asks any question other than regarding "medicine" or "health" or "pharmacueticals" or anything regards to medicine brands etc , just answer by saying "Sorry!. this bot is integrated to answer medicine & health related questions .... \n question is : $userMessage} " '''
             }
           ]
         }
@@ -53,19 +58,24 @@ class _ChatUIState extends State<ChatUI> {
       if (response.statusCode == 200) {
         var result = jsonDecode(response.body);
         setState(() {
-          messages.removeAt(0); // Remove "Typing..."
-          messages.insert(0, {
+          messages.removeLast();
+          messages.add({
             'user': 'Bot',
             'text': result["candidates"][0]['content']["parts"][0]["text"]
           });
+          scrollbehaviour();
         });
       } else {
         throw Exception('Error: ${response.statusCode}');
       }
     } catch (e) {
       setState(() {
-        messages.removeAt(0);
-        messages.insert(0, {'user': 'Bot', 'text': 'Error getting response.'});
+        messages.removeLast();
+        messages.add({
+          'user': 'Bot',
+          'text': 'Error getting response. Please try again \n Error ${e}'
+        });
+        scrollbehaviour();
       });
     }
   }
@@ -131,6 +141,10 @@ class _ChatUIState extends State<ChatUI> {
           ),
           child: AppBar(
             backgroundColor: Colors.transparent, // Transparent to show gradient
+            leading: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Image.asset("assets/medbot_Logo.png"),
+            ),
             title: Text(
               'MedBot',
               style: TextStyle(
@@ -151,8 +165,7 @@ class _ChatUIState extends State<ChatUI> {
         children: [
           Expanded(
             child: ListView.builder(
-              reverse:
-                  true, // Reverse the list so new messages appear at the bottom
+              controller: _scrollController,
               itemCount: messages.length,
               itemBuilder: (context, index) {
                 bool isUser = messages[index]['user'] == 'You';
@@ -218,5 +231,15 @@ class _ChatUIState extends State<ChatUI> {
         ],
       ),
     );
+  }
+
+  scrollbehaviour() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    });
   }
 }

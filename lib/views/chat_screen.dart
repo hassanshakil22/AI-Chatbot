@@ -159,10 +159,6 @@ class _ChatScreenState extends State<ChatScreen> {
           showTime: true,
           messageDecorationBuilder: (message, previousMessage, nextMessage) {
             return BoxDecoration(
-              gradient: LinearGradient(
-                  colors: message.user.id == 'User'
-                      ? [Colors.blue[100]!, Colors.purple[100]!]
-                      : [Colors.grey[200]!, Colors.grey[400]!]),
               borderRadius: BorderRadius.circular(16.0),
             );
           },

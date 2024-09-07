@@ -1,5 +1,4 @@
-import 'package:ai_chatbot/views/chat_UI.dart';
-
+import 'package:ai_chatbot/views/splash_view.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -12,6 +11,10 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(title: 'AI CHATBOT', home: ChatUI());
+    return const MaterialApp(
+      title: 'AI CHATBOT',
+      home: SplashView(),
+      debugShowCheckedModeBanner: false,
+    );
   }
 }
